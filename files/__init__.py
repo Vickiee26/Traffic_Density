@@ -8,8 +8,8 @@ from PIL import Image
 import colorsys
 import files.vehicles2
 import time
-from files.YOLOv3.models import yolo_main, tiny_yolo_main
-from files.YOLOv3.utils import letterbox_image, yolo_eval
+from Detection.YOLOv3.models import yolo_main, tiny_yolo_main
+from Detection.YOLOv3.utils import letterbox_image, yolo_eval
 
 def draw_box(image, box, color, thickness=2):
    
