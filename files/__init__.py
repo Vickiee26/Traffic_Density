@@ -8,8 +8,8 @@ from PIL import Image
 import colorsys
 import files.vehicles2
 import time
-from Detection.YOLOv3.models import yolo_main, tiny_yolo_main
-from Detection.YOLOv3.utils import letterbox_image, yolo_eval
+from files.YOLOv3.models import yolo_main
+from files.YOLOv3.utils import letterbox_image, yolo_eval
 
 def draw_box(image, box, color, thickness=2):
    
@@ -139,18 +139,12 @@ class VideoObjectDetection:
             try:
                 
 
-                if(self.__modelType == "yolov3" or self.__modelType == "tinyyolov3"):
+                if(self.__modelType == "yolov3"):
 
                     output_frames_dict = {}
                     output_frames_count_dict = {}
 
-
-
-
                     input_video = cv2.VideoCapture(input_file_path)
-
-                    if(camera_input != None):
-                        input_video = camera_input
 
                     output_video_filepath = output_file_path + '.avi'
 
@@ -160,12 +154,8 @@ class VideoObjectDetection:
                                                    frames_per_second,
                                                    (frame_width, frame_height))
 
-
-
                     cnt_up=0
                     cnt_down=0
-
-                    #Get width and height of video
 
                     w=input_video.get(3)
                     h=input_video.get(4)
@@ -261,6 +251,7 @@ class VideoObjectDetection:
                             #Binarization
                             ret,imBin=cv2.threshold(fgmask,200,255,cv2.THRESH_BINARY)
                             ret,imBin2=cv2.threshold(fgmask2,200,255,cv2.THRESH_BINARY)
+
                             #OPening i.e First Erode the dilate
                             mask=cv2.morphologyEx(imBin,cv2.MORPH_OPEN,kernalOp)
                             mask2=cv2.morphologyEx(imBin2,cv2.MORPH_CLOSE,kernalOp)
@@ -289,7 +280,6 @@ class VideoObjectDetection:
                                                 new = False
                                                 i.updateCoords(cx, cy)
 
-                                                
                                                 if i.going_UP(line_down,line_up)==True:
                                                     cnt_up+=1
                                                     print("ID:",i.getId(),'crossed going up at', time.strftime("%c"))
@@ -313,7 +303,7 @@ class VideoObjectDetection:
                                             pid+=1
 
                                     cv2.circle(frame,(cx,cy),5,(0,0,255),-1)
-                                    img=cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
+                                    #img=cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),2)
 
                             for i in cars:
                                 cv2.putText(frame, str(i.getId()), (i.getX(), i.getY()), font, 0.3, i.getRGB(), 1, cv2.LINE_AA)
@@ -330,9 +320,11 @@ class VideoObjectDetection:
                            # frame=cv2.polylines(frame,[pts_L4],False,(255,255,255),thickness=1)
                             cv2.putText(frame, str_up, (10, 40), font, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
                             cv2.putText(frame, str_up, (10, 40), font, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+                            
                             #cv2.putText(frame, str_down, (10, 90), font, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
                             #cv2.putText(frame, str_down, (10, 90), font, 0.5, (255, 0, 0), 1, cv2.LINE_AA)
-                            cv2.imshow('Frame',frame)
+                            
+                            #cv2.imshow('Frame',frame)
 
                             if cv2.waitKey(1)&0xff==ord('q'):
                                 break
@@ -343,7 +335,7 @@ class VideoObjectDetection:
                             counting += 1
 
                             if (log_progress == True):
-                                print("This isFrame : ", str(counting))
+                                print("Processing Frame : ", str(counting))
 
                             detected_copy = frame.copy()
                             detected_copy = cv2.cvtColor(detected_copy, cv2.COLOR_BGR2RGB)
@@ -377,13 +369,11 @@ class VideoObjectDetection:
                                 box = out_boxes[a]
                                 score = out_scores[a]
 
-
+                                #print (predicted_class)
                                 s1 = 'person'
                                
-                                if predicted_class == s1:
-                                    continue
-
-
+                                '''if predicted_class == s1:
+                                    continue'''                                    
                                 if score < min_probability:
                                     continue
 
@@ -407,11 +397,13 @@ class VideoObjectDetection:
                                     draw_caption(detected_copy, detection_details, label)
                                 elif (display_object_name == True):
                                     draw_caption(detected_copy, detection_details, predicted_class)
+
                                 elif (display_percentage_probability == True):
                                     draw_caption(detected_copy, detection_details, str(score * 100))
 
                                 each_object_details = {}
                                 each_object_details["name"] = predicted_class
+
                                 each_object_details["percentage_probability"] = score * 100
                                 each_object_details["box_points"] = detection_details
                                 output_objects_array.append(each_object_details)
